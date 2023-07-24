@@ -1,0 +1,39 @@
+# Binaries and executables
+bin/
+obj/
+
+# Compiled output
+*.exe
+*.dll
+*.pdb
+*.dll.config
+*.exe.config
+
+# Debug and release folders (if using Visual Studio)
+Debug/
+Release/
+
+# User-specific files (for Visual Studio)
+*.user
+*.suo
+*.userprefs
+*.vs
+
+# NuGet packages (if using package management)
+packages/
+*.nupkg
+
+# Visual Studio generated files
+.vscode/
+*.vsix
+*.vssscc
+*_i.c
+*_p.c
+*.pidb
+*.log
+*.scc
+
+# Logs and cache files
+*.log
+*.cache
+*.vs
