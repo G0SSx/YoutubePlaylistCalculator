@@ -37,3 +37,4 @@ packages/
 *.log
 *.cache
 *.vs
+PlaylistScrapingBot/user_secrets.txt
