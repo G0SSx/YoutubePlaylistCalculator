@@ -1,26 +1,32 @@
 ﻿using Raylib_cs;
-using System.Numerics;
 
 public sealed class AppStateMachine
 {
-    private readonly Dictionary<Type, IState> _states;
+    private readonly Dictionary<Type, IUpdatableState> _states;
 
-    private IState? _state;
+    private IUpdatableState? _activeState;
 
     public AppStateMachine(IUIFactory uiFactory)
     {
-        _states = new Dictionary<Type, IState>
+        _states = new Dictionary<Type, IUpdatableState>
         {
             [typeof(MainMenuState)] = new MainMenuState(this, uiFactory),
             [typeof(ScrapingMenuState)] = new ScrapingMenuState(this, uiFactory),
+            [typeof(GetResultsState)] = new GetResultsState(this, uiFactory),
+            [typeof(FailedMenuState)] = new FailedMenuState(this, uiFactory),
         };
     }
 
-    public void Enter<TStateType>() where TStateType : IState
+    public void Enter<TState>() where TState : class, IState
     {
-        _state?.Exit();
-        _state = _states[typeof(TStateType)];
-        _state?.Enter();
+        IState state = ChangeState<TState>();
+        state?.Enter();
+    }
+
+    public void Enter<TState, TPayLoad>(TPayLoad payload) where TState : class, IPayloadedState<TPayLoad>
+    {
+        TState state = ChangeState<TState>();
+        state?.Enter(payload);
     }
 
     public void Run()
@@ -30,12 +36,25 @@ public sealed class AppStateMachine
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.DARKGRAY);
 
-            if (_state is null)
+            if (_activeState is null)
                 Console.WriteLine("Current state is null!");
             else
-                _state.Update();
+                _activeState.Update();
 
             Raylib.EndDrawing();
         }
     }
+
+    private TState ChangeState<TState>() where TState : class, IUpdatableState
+    {
+        _activeState?.Exit();
+
+        TState state = GetState<TState>();
+        _activeState = state;
+
+        return state;
+    }
+
+    private TState GetState<TState>() where TState : class, IUpdatableState =>
+        _states[typeof(TState)] as TState ?? throw new ArgumentNullException("State wasn't found");
 }
