@@ -1,7 +1,7 @@
 ﻿using Raylib_cs;
 using System.Numerics;
 
-public class UIFactory : IUIFactory
+public sealed class UIFactory : IUIFactory
 {
     private Window? _window;
 
@@ -20,7 +20,8 @@ public class UIFactory : IUIFactory
         return button;
     }
 
-    public InputField? CreateInputField(int yOffset, int width, int height, int textSize = 15)
+    public InputField? CreateInputField(int yOffset, int width = 450, int height = 75, string existingText = "", 
+        int textSize = 15)
     {
         if (_window is null)
         {
@@ -29,7 +30,7 @@ public class UIFactory : IUIFactory
         }
 
         Vector2 position = new Vector2(_window.Width / 2 - width / 2, yOffset);
-        return new(position, width, height, textSize);
+        return new(existingText, position, width, height, textSize);
     }
 
     public void CreateText(string text, int yOffset, Color color, int textSize = 20)
