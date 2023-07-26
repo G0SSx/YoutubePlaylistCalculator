@@ -1,12 +1,12 @@
 ﻿using Raylib_cs;
 
-public class ScrapingMenuState : IState
+public sealed class ScrapingMenuState : IState
 {
     private readonly AppStateMachine _stateMachine;
     private readonly IUIFactory _uiFactory;
-
-    private InputField? _inputField;
-    private Button? _checkIfURLValidButton;
+    
+    private bool _checkURLButtonWasPressedPastFrame;
+    private string _url = "";
 
     public ScrapingMenuState(AppStateMachine stateMachine, IUIFactory uiFactory)
     {
@@ -22,19 +22,18 @@ public class ScrapingMenuState : IState
     {
         // Text
         _uiFactory.CreateText("Put your youtube playlist link into text filed below:", yOffset: 150, Color.MAGENTA);
-        
+
         // Input field
-        _inputField = _uiFactory.CreateInputField(350, 450, 50, 20);
-        _inputField?.Update();
+        InputField? inputField = _uiFactory.CreateInputField(350, 450, 50, _url, 20);
+        UpdateInput(inputField);
 
         // Button
-        _checkIfURLValidButton = _uiFactory.CreateButton("Scrap the link", Color.RED, Color.BLACK, 500, 150, 75);
-        if (_checkIfURLValidButton is not null)
+        Button? checkURLButton =
+            _uiFactory.CreateButton("Scrap the link", Color.RED, Color.BLACK, yOffset: 500, 300, 75);
+        if (checkURLButton is not null)
         {
-            _checkIfURLValidButton.Update();
-
-            if (_checkIfURLValidButton.IsPressed)
-                CheckIfURLValid();
+            checkURLButton.Update();
+            HandleButtonInteraction(checkURLButton);
         }
     }
 
@@ -42,8 +41,36 @@ public class ScrapingMenuState : IState
     {
     }
 
-    private void CheckIfURLValid()
+    private void HandleButtonInteraction(Button checkURLButton)
     {
-        // check url with URLService
+        if (_checkURLButtonWasPressedPastFrame && Raylib.IsMouseButtonUp(MouseButton.MOUSE_LEFT_BUTTON))
+            TrySetURL();
+
+        if (checkURLButton.IsPressed)
+            _checkURLButtonWasPressedPastFrame = true;
+        else
+            _checkURLButtonWasPressedPastFrame = false;
+    }
+
+    private void TrySetURL()
+    {
+        try
+        {
+            PlaylistAPIService.TrySetPlaylistId(_url);
+            _stateMachine.Enter<GetResultsState>();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+
+    private void UpdateInput(InputField? inputField)
+    {
+        if (inputField is not null)
+        {
+            inputField.Update();
+            _url = inputField.URL;
+        }
     }
 }
