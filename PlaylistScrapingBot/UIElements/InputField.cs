@@ -1,46 +1,47 @@
 ﻿using Raylib_cs;
+using System.Numerics;
 
-public class InputField
+public sealed class InputField
 {
-    private static KeyboardInputService? _keyboardInputService;
-    private static string _inputText = "";
+    private readonly Vector2 _position;
+    private readonly int _width;
+    private readonly int _height;
+    private readonly int _textSize;
 
-    public InputField(KeyboardInputService keyboardInputService)
+    public string URL;
+
+    public InputField(string existingURL, Vector2 position, int width, int height, int textSize)
     {
-        _keyboardInputService = keyboardInputService;
+        URL = existingURL;
+        _position = position;
+        _width = width;
+        _height = height;
+        _textSize = textSize;
     }
 
     public void Update()
     {
-        Draw();
         UpdateText();
+        Draw();
     }
 
     private void Draw()
     {
-        Raylib.BeginDrawing();
-        Raylib.ClearBackground(Color.RAYWHITE);
+        Rectangle rec = new(_position.X, _position.Y, _width, _height);
+        
+        Raylib.DrawRectangleRec(rec, Color.LIGHTGRAY);
+        Raylib.DrawRectangleLinesEx(rec, 3, Color.DARKGRAY);
 
-        // Draw the input field rectangle
-        Raylib.DrawRectangle(100, 200, 400, 50, Color.LIGHTGRAY);
-        Raylib.DrawRectangleLines(100, 200, 400, 50, Color.DARKGRAY);
-
-        // Draw the input text
-        Raylib.DrawText(_inputText, 110, 210, 20, Color.DARKGRAY);
-
-        Raylib.EndDrawing();
+        Raylib.DrawText(URL, (int)rec.x + 5, (int)rec.y + _textSize, _textSize, Color.MAGENTA);
     }
 
-    private static void UpdateText()
+    private void UpdateText()
     {
-        if (_keyboardInputService is null)
-            return;
-
-        if (_inputText.Length > 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_BACKSPACE))
+        if (URL.Length > 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_BACKSPACE))
             SubtractInputText();
 
-        _inputText += _keyboardInputService.GetPressedButtonValues();
+        URL += KeyboardInputService.GetPressedButtonValues() ?? "";
     }
 
-    private static void SubtractInputText() => _inputText = _inputText.Substring(0, _inputText.Length - 1);
+    private void SubtractInputText() => URL = URL.Substring(0, URL.Length - 1);
 }
