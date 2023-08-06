@@ -1,4 +1,4 @@
-# YoutubePlaylistCalculator
+# Youtube playlist scrapper
 App built using Raylib
 
 ## How to run:
